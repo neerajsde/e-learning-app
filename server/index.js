@@ -28,13 +28,8 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(fileUpload());
 app.use(cookieParser());
-// app.use(cors({
-//   origin:process.env.FRONTEND_URL,
-//   credentials: true
-// }));
-
 app.use(cors({
-  origin:"*",
+  origin:process.env.FRONTEND_URL,
   credentials: true
 }));
 
@@ -57,10 +52,10 @@ app.get('/', (req, res) => {
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // API routes
-app.use('/api/v1/user',  userRoutes);
-app.use('/api/v1/profile', profileRoutes);
-app.use('/api/v1/course', courseRoutes);
-app.use('/api/v1/rating', ratingRoutes);
+app.use('/api/v1/user',decryptData,  userRoutes);
+app.use('/api/v1/profile',decryptData, profileRoutes);
+app.use('/api/v1/course',decryptData, courseRoutes);
+app.use('/api/v1/rating',decryptData, ratingRoutes);
 app.use('/api/v1/contact',decryptData, contactRoutes);
 // app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/dashboard',decryptData, dashboardRoutes);
