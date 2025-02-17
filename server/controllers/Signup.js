@@ -26,8 +26,8 @@ exports.signupHandler = async (req, res) => {
 
         // Fetch user, and OTP details in parallel
         const [[user], [otpRecord]] = await Promise.all([
-            Pool.query(`SELECT id FROM users WHERE email = ?`, [trimmedEmail]),
-            Pool.query(`SELECT * FROM otp WHERE email = ? ORDER BY Created_at DESC LIMIT 1`, [trimmedEmail]),
+            Pool.query(`SELECT id FROM Users WHERE email = ?`, [trimmedEmail]),
+            Pool.query(`SELECT * FROM Otp WHERE email = ? ORDER BY Created_at DESC LIMIT 1`, [trimmedEmail]),
         ]);
 
         // Check if user email already exists
@@ -61,7 +61,7 @@ exports.signupHandler = async (req, res) => {
             await connection.beginTransaction();
 
             // Delete OTP after successful validation
-            await connection.query('DELETE FROM otp WHERE email = ?', [otpRecord[0].email]);
+            await connection.query('DELETE FROM Otp WHERE email = ?', [otpRecord[0].email]);
 
             // Insert new user into the database
             const [insertResult] = await connection.query(
@@ -70,7 +70,7 @@ exports.signupHandler = async (req, res) => {
             );
             const userId = insertResult.insertId;
 
-            await connection.query('INSERT INTO profile (userId) VALUES (?)', [userId]);
+            await connection.query('INSERT INTO Profile (userId) VALUES (?)', [userId]);
 
             await connection.commit();
         } catch (transactionError) {

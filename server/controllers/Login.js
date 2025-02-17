@@ -26,7 +26,7 @@ exports.sendOtp = async (req, res) => {
         const Pool = getPool();
 
         // Check if user already exists
-        const [result] = await Pool.query(`SELECT id FROM users WHERE email = ?`, [email.trim()]);
+        const [result] = await Pool.query(`SELECT id FROM Users WHERE email = ?`, [email.trim()]);
         if (result.length > 0) {
             return sendResponse(res, 409, false, 'User already exists');
         }
@@ -46,7 +46,7 @@ exports.sendOtp = async (req, res) => {
 
         // Store OTP in the database with expiration time
         await Pool.query(
-            `INSERT INTO otp (email, otp) VALUES (?, ?)`,
+            `INSERT INTO Otp (email, otp) VALUES (?, ?)`,
             [email.trim(), otp]
         );
 
@@ -71,7 +71,7 @@ exports.loginHandler = async (req, res) => {
 
         // Fetch user from the database
         const [user] = await Pool.query(
-            `SELECT id, email, password, active, accountType FROM users WHERE email = ? AND accountType = ?`, 
+            `SELECT id, email, password, active, accountType FROM Users WHERE email = ? AND accountType = ?`, 
             [trimmedEmail, userType]
         );
 
@@ -94,7 +94,7 @@ exports.loginHandler = async (req, res) => {
 
         // update user loggedin status
         await Pool.query(
-            `UPDATE users SET isLoggedIn = TRUE WHERE id = ?`, 
+            `UPDATE Users SET isLoggedIn = TRUE WHERE id = ?`, 
             [userData.id]
         );
 
@@ -119,7 +119,7 @@ exports.changePassword = async (req, res) => {
 
         const Pool = getPool();
         const [user] = await Pool.query(
-            `SELECT id, name, email, password, accountType FROM users WHERE id = ?`, 
+            `SELECT id, name, email, password, accountType FROM Users WHERE id = ?`, 
             [req.user.id]
         );
 
@@ -139,7 +139,7 @@ exports.changePassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 12);
 
         await Pool.query(
-            'UPDATE users SET password = ? WHERE id = ?', 
+            'UPDATE Users SET password = ? WHERE id = ?', 
             [hashedPassword, userData.id]
         );
 
@@ -182,7 +182,7 @@ exports.logOut = async (req, res) => {
 
         // Update user login status
         const [result] = await Pool.query(
-            `UPDATE users SET isLoggedIn = FALSE WHERE id = ?`, 
+            `UPDATE Users SET isLoggedIn = FALSE WHERE id = ?`, 
             [id]
         );
 

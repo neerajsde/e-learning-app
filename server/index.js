@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(fileUpload());
 app.use(cookieParser());
 app.use(cors({
-  origin:"http://localhost:3000",
+  origin:process.env.FRONTEND_URL,
   credentials: true
 }));
 
