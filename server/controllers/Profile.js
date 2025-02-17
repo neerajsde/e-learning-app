@@ -3,7 +3,7 @@ const sendResponse = require("../utlis/responseSender");
 const imageUploader = require('../utlis/imageUploader');
 const deleteImage = require('../utlis/deleteImageHandler');
 
-// update user profile
+// update user Profile
 exports.updateProfile = async (req, res) => {
     try {
         // Extract user data from request body
@@ -20,7 +20,7 @@ exports.updateProfile = async (req, res) => {
         const Pool = getPool();
         if(username){
             await Pool.query(
-                'UPDATE users SET name = ? WHERE id = ?', [username, id]
+                'UPDATE Users SET name = ? WHERE id = ?', [username, id]
             )
         }
         
@@ -53,7 +53,7 @@ exports.updateProfile = async (req, res) => {
         // Execute the query
         await Pool.query(query, params);
 
-        const [user] = await Pool.query('SELECT name, email, accountType, gender, dateOfBirth, about, contryCode, contactNumber, profession, user_img FROM users JOIN profile ON users.id = profile.userid WHERE users.id = ?', [req.user.id]);
+        const [user] = await Pool.query('SELECT name, email, accountType, gender, dateOfBirth, about, contryCode, contactNumber, profession, user_img FROM Users JOIN Profile ON Users.id = Profile.userid WHERE Users.id = ?', [req.user.id]);
         if(user.length === 0){
             return sendResponse(res, 404, false, 'User Data Not Found');
         }
@@ -61,12 +61,12 @@ exports.updateProfile = async (req, res) => {
         // Return success response
         return sendResponse(res, 200, true, 'Profile updated successfully.', {updatedData: user[0]});
     } catch (error) {
-        console.error('Error while updating user profile:', error.message);
+        console.error('Error while updating user Profile:', error.message);
         return sendResponse(res, 500, false, 'Internal server error', { error: error.message });
     }
 };
 
-// delete user profile
+// delete user Profile
 exports.deleteUser = async (req, res) => {
     try {
         // Get userId from the authenticated request
@@ -94,7 +94,7 @@ exports.deleteUser = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try{
         const Pool = getPool();
-        const [user] = await Pool.query('SELECT name, email, accountType, gender, dateOfBirth, about, contryCode, contactNumber, profession, user_img FROM users JOIN profile ON users.id = profile.userid WHERE users.id = ?', [req.user.id]);
+        const [user] = await Pool.query('SELECT name, email, accountType, gender, dateOfBirth, about, contryCode, contactNumber, profession, user_img FROM Users JOIN Profile ON Users.id = Profile.userid WHERE Users.id = ?', [req.user.id]);
         if(user.length === 0){
             return sendResponse(res, 404, false, 'User Data Not Found');
         }
@@ -107,7 +107,7 @@ exports.getProfile = async (req, res) => {
 }
 
 
-// update user profile picture
+// update user Profile picture
 exports.updateProfilePicture = async (req, res) => {
     try{
         const { id } = req.user;
@@ -119,7 +119,7 @@ exports.updateProfilePicture = async (req, res) => {
 
         const Pool = getPool();
         const [[user]] = await Pool.query(
-            'SELECT user_img FROM users WHERE id = ?', [id]
+            'SELECT user_img FROM Users WHERE id = ?', [id]
         );
 
         if(user.user_img){
@@ -133,7 +133,7 @@ exports.updateProfilePicture = async (req, res) => {
         }
 
         await Pool.query(
-            'UPDATE users SET user_img = ? WHERE id = ?', [userImage.url, id]
+            'UPDATE Users SET user_img = ? WHERE id = ?', [userImage.url, id]
         );
 
         return sendResponse(res, 200, true, 'Profile Image Updated', {user_img:userImage.url});
@@ -143,7 +143,7 @@ exports.updateProfilePicture = async (req, res) => {
     }
 }
 
-// remove user profile picture
+// remove user Profile picture
 exports.removeProfilePicture = async (req, res) => {
     try{
         const { id } = req.user;
@@ -151,7 +151,7 @@ exports.removeProfilePicture = async (req, res) => {
         const Pool = getPool();
 
         const [[user]] = await Pool.query(
-            'SELECT user_img FROM users WHERE id = ?', [id]
+            'SELECT user_img FROM Users WHERE id = ?', [id]
         );
         
         const result = await deleteImage(user.user_img);
@@ -160,7 +160,7 @@ exports.removeProfilePicture = async (req, res) => {
         } 
         
         await Pool.query(
-            'UPDATE users SET user_img = ? WHERE id = ?', [null, id]
+            'UPDATE Users SET user_img = ? WHERE id = ?', [null, id]
         );
 
         return sendResponse(res, 200, true, 'Profile Image Removed', {user_img:''});

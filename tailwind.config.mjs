@@ -200,7 +200,16 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		}, 
+		animation: {
+        borderGlow: "borderGlow 1.5s infinite alternate",
+      	},
+		keyframes: {
+			borderGlow: {
+			"0%": { boxShadow: "0 0 5px rgba(109, 40, 217, 0.5)" },
+			"100%": { boxShadow: "0 0 15px rgba(109, 40, 217, 1)" },
+			},
+		},
   	}
   },
   plugins: [

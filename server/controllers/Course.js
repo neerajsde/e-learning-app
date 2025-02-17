@@ -52,7 +52,7 @@ exports.createCourse = async (req, res) => {
 
       for (const tag of tagList) {
           // Check if tag already exists
-          const checkTagQuery = `SELECT id FROM tags WHERE name = ?`;
+          const checkTagQuery = `SELECT id FROM Tags WHERE name = ?`;
           const existingTag = await executeQuery(checkTagQuery, [tag]);
 
           let tagId;
@@ -60,10 +60,10 @@ exports.createCourse = async (req, res) => {
               tagId = existingTag[0].id;
           } else {
               // Create a new tag
-              const instructorNameQuery = `SELECT name FROM users WHERE id = ?`;
+              const instructorNameQuery = `SELECT name FROM Users WHERE id = ?`;
               const [instructorDetails] = await executeQuery(instructorNameQuery, [req.user.id]);
 
-              const createTagQuery = `INSERT INTO tags (name, description) VALUES (?, ?)`;
+              const createTagQuery = `INSERT INTO Tags (name, description) VALUES (?, ?)`;
               const tagDescription = `This tag ${tag} was created by ${instructorDetails.name}`;
               const newTagResult = await executeQuery(createTagQuery, [tag, tagDescription]);
 
@@ -159,8 +159,8 @@ exports.getCourseDetails = async (req, res) => {
         // get course duration
         const [duration] = await Pool.query(
             `SELECT sb.timeDuration AS time 
-                FROM section s
-                JOIN subsection sb
+                FROM Section s
+                JOIN SubSection sb
                 ON s.id = sb.sectionId AND s.courseId = ?`,
             [course.id]
         )
@@ -190,18 +190,18 @@ exports.getAllCourses = async (req, res) => {
         const pool = await getPool();
 
         const [allCourses] = await pool.query(`SELECT 
-                                            courses.id AS id,
-                                            courses.courseName AS courseName,
-                                            courses.coursedescription AS description,
-                                            courses.whatyouwilllearn AS whatyouwilllearn,
-                                            courses.price AS price,
-                                            courses.thumbnail AS thumbnail,
-                                            courses.updated_at AS updatedAt,
-                                            users.name AS instructorName,
-                                            users.user_img AS instructorImg
-                                        FROM courses
-                                        INNER JOIN users
-                                        ON courses.instructorId = users.id`);
+                                            c.id AS id,
+                                            c.courseName AS courseName,
+                                            c.coursedescription AS description,
+                                            c.whatyouwilllearn AS whatyouwilllearn,
+                                            c.price AS price,
+                                            c.thumbnail AS thumbnail,
+                                            c.updated_at AS updatedAt,
+                                            u.name AS instructorName,
+                                            u.user_img AS instructorImg
+                                        FROM Courses c
+                                        INNER JOIN Users u
+                                        ON c.instructorId = u.id`);
 
         return sendResponse(res, 200, true, 'Data for all courses fetched successfully', {data:allCourses});
     }

@@ -7,12 +7,17 @@ import Section5 from "./components/Section5";
 import Section6 from "./components/Section6";
 import Section7 from "./components/Section7";
 import Section8 from "./components/Section8";
+import CoursesLink from "./components/CoursesLink";
+import { Suspense } from "react";
 
 export default function Home() {
   return (
     <div className="w-screen flex flex-col font-inter">
       <div className="w-full flex flex-col items-center bg-richblack-900 p-4 md:p-6 lg:p-8">
         <Section1 />
+        <Suspense fallback={"Loading..."}>
+          <CoursesLink/>
+        </Suspense>
         <Section2 />
         <Section3 />
         <Section4 />

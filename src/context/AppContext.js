@@ -11,7 +11,7 @@ function AppContextProvider({ children }) {
   const [userData, setUserData] = useState(null);
 
   const AuthUser = async () => {
-    const resData = await apiHandler('/profile', "GET", true);
+    const resData = await apiHandler('/profile', "GET", true, null, {cache: 'no-store'});
     // console.log(resData);
     if(resData.success){
       setUserData(resData.data.userData);

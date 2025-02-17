@@ -17,7 +17,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await apiHandler('/dashboard', "GET", true);
+                const response = await apiHandler('/dashboard', "GET", true, null, {cache: 'no-store'});
                 if (!response.success) throw new Error('Fetch failed');
                 setUserData(response.data.userData);
                 setState({ loading: false, error: false });

@@ -21,7 +21,7 @@ exports.resetPasswordAndSendMailWithUrl = async(req, res) => {
         
         const Pool = getPool();
         const [user] = await Pool.query(
-            `SELECT id, name, email, active FROM users WHERE email = ?`, 
+            `SELECT id, name, email, active FROM Users WHERE email = ?`, 
             [email.trim()]
         );
 
@@ -41,7 +41,7 @@ exports.resetPasswordAndSendMailWithUrl = async(req, res) => {
         const tokenExpiry = Date.now() + 10 * 60 * 1000;
 
         // Store the token and expiry in Database 
-        await Pool.query('UPDATE users SET token = ?, tokenExpirationTime = ? WHERE id = ?' , [resetToken, tokenExpiry, userData.id]);
+        await Pool.query('UPDATE Users SET token = ?, tokenExpirationTime = ? WHERE id = ?' , [resetToken, tokenExpiry, userData.id]);
         
         const url = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
         // Send the reset email
@@ -64,7 +64,7 @@ exports.updatePassword = async (req, res) => {
 
         const Pool = getPool();
         const [user] = await Pool.query(
-            `SELECT id, email, name, accountType, tokenExpirationTime FROM users WHERE token = ?`, 
+            `SELECT id, email, name, accountType, tokenExpirationTime FROM Users WHERE token = ?`, 
             [token]
         );
 
@@ -78,7 +78,7 @@ exports.updatePassword = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 12);
-        await Pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userData.id]);
+        await Pool.query('UPDATE Users SET password = ? WHERE id = ?', [hashedPassword, userData.id]);
         // Send email notification
         await mailSender(
             userData.email, 
