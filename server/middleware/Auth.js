@@ -31,7 +31,7 @@ exports.auth = async (req, res, next) => {
             }
 
             // Check if the user exists in the database
-            const [result] = await Pool.query(`SELECT id, active, isLoggedIn FROM users WHERE id = ?`, [payload.id]);
+            const [result] = await Pool.query(`SELECT id, active, isLoggedIn FROM Users WHERE id = ?`, [payload.id]);
             if (result.length < 0) {
                 return sendResponse(res, 409, false, 'Invaild user not found');
             }
