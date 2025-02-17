@@ -1,12 +1,14 @@
-import Dashboard from './components/Dashboard';
+import { Suspense } from "react";
+import Dashboard from "./components/Dashboard";
 
-const page = () => {
+export default function Page() {
   return (
-    <Dashboard/>
-  )
+    <Suspense fallback={<div>Loading...</div>}>
+      <Dashboard />
+    </Suspense>
+  );
 }
 
-export default page
 
 export const metadata = {
   title: "Dashboard | Study Notion",
