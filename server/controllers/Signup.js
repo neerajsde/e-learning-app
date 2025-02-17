@@ -65,7 +65,7 @@ exports.signupHandler = async (req, res) => {
 
             // Insert new user into the database
             const [insertResult] = await connection.query(
-                'INSERT INTO users (name, email, password, accountType) VALUES (?,?,?,?)',
+                'INSERT INTO Users (name, email, password, accountType) VALUES (?,?,?,?)',
                 [trimmedName, trimmedEmail, hashedPassword, trimmedRole]
             );
             const userId = insertResult.insertId;

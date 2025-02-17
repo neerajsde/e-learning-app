@@ -13,6 +13,7 @@
 /server/public/CourseThumbnails/*
 /server/public/Users/*
 /server/private/*
+updates.txt
 
 # testing
 /coverage
