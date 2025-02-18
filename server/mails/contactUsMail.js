@@ -42,7 +42,7 @@ exports.contactUsClientEmail = (name) => {
     </head>
     <body>
       <div class="container">
-        <img class="logo" src="https://i.ibb.co/7Xyj3PC/logo.png" alt="Company Logo">
+        <img class="logo" src=${process.env.LOGO_URL} alt="Company Logo">
         <div class="message">Thank You for Reaching Out!</div>
         <div class="body">
           <p>Dear ${name},</p>

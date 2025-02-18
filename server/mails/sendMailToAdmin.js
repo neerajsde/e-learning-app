@@ -40,7 +40,7 @@ exports.contactUsAdminEmail = (name, email, phone, message) => {
     </head>
     <body>
       <div class="container">
-        <img class="logo" src="https://i.ibb.co/7Xyj3PC/logo.png" alt="Company Logo">
+        <img class="logo" src=${process.env.LOGO_URL} alt="Company Logo">
         <div class="message">New Contact Form Submission</div>
         <div class="body">
           <p><span class="highlight">Name:</span> ${name}</p>

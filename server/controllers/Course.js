@@ -100,13 +100,21 @@ exports.updateCourseThumbnail = async (req, res) => {
             return sendResponse(res, 400, false, 'Please select an image');
         }
 
+        const pool = await getPool();
+        const [[course]] = await pool.query(
+            'SELECT thumbnail FROM Courses WHERE id = ?', [id]
+        );
+
+        if(course.thumbnail){
+            await deleteImage(course.thumbnail);
+        }
+
         // Upload image
         const thumbnailImage = await imageUploader('CourseThumbnails', thumbnail);
         if (!thumbnailImage.flag || !thumbnailImage.url) {
             return sendResponse(res, 400, false, thumbnailImage.message || 'Image upload failed');
         }
 
-        const pool = await getPool();
         const [update] = await pool.query(
             'UPDATE Courses SET thumbnail = ? WHERE id = ?', 
             [thumbnailImage.url, id]

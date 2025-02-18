@@ -9,8 +9,8 @@ function sendResponse(res, statusCode, success, message, data = null) {
     }
 
     // Encrypt the response
-    // const encodedResponse = encrypt(responsePayload);
-    const encodedResponse = responsePayload;
+    const encodedResponse = encrypt(responsePayload);
+    // const encodedResponse = responsePayload;
 
     res.status(statusCode).json(encodedResponse);
 }

@@ -71,7 +71,7 @@ exports.sendPasswordChangeMail = (username, role) => {
         </head>
         <body>
             <div class="container">
-                <img src={process.env.LOGO_URL} alt="Chat App Logo" class="logo" />
+                <img src=${process.env.LOGO_URL} alt="Chat App Logo" class="logo" />
 
                 <h2 class="heading">Password Changed Successfully!</h2>
 

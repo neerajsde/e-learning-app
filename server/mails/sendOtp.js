@@ -70,7 +70,7 @@ exports.sendUserOTPMail = (otp) => {
         </head>
         <body>
             <div class="container">
-                <img src="https://chat.neerajprajapati.in/public/assets/logo.png" alt="Chat App Logo" class="logo" />
+                <img src=${process.env.LOGO_URL} alt="Chat App Logo" class="logo" />
 
                 <h2 class="heading">Welcome to Study Notion!</h2>
 
