@@ -5,6 +5,7 @@ const {
   createCourse,
   getCourseDetails,
   getAllCourses,
+  updateCourseThumbnail
 } = require("../controllers/Course");
 
 const {
@@ -42,6 +43,7 @@ const {
 router.get("/c/:courseUrl", getCourseDetails);
 router.post("/create", auth, isInstructor, createCourse);
 router.get("/all", getAllCourses);
+router.put('/update/thumbnail', updateCourseThumbnail);
 
 // Category routes
 router.post("/category", auth, isAdmin, createCategory);

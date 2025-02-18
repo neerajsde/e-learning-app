@@ -28,10 +28,12 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(fileUpload());
 app.use(cookieParser());
-app.use(cors({
-  origin:process.env.FRONTEND_URL,
-  credentials: true
-}));
+// app.use(cors({
+//   origin:process.env.FRONTEND_URL,
+//   credentials: true
+// }));
+
+app.use(cors());
 
 // Database connection
 connectToDatabase().catch((err) => {

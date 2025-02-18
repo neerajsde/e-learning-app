@@ -87,6 +87,43 @@ exports.createCourse = async (req, res) => {
   }
 };
 
+exports.updateCourseThumbnail = async (req, res) => {
+    try {
+        const { id } = req.query;
+        const thumbnail = req.files?.img;
+
+        if (!id) {
+            return sendResponse(res, 400, false, 'Course ID is required');
+        }
+
+        if (!thumbnail) {
+            return sendResponse(res, 400, false, 'Please select an image');
+        }
+
+        // Upload image
+        const thumbnailImage = await imageUploader('CourseThumbnails', thumbnail);
+        if (!thumbnailImage.flag || !thumbnailImage.url) {
+            return sendResponse(res, 400, false, thumbnailImage.message || 'Image upload failed');
+        }
+
+        const pool = await getPool();
+        const [update] = await pool.query(
+            'UPDATE Courses SET thumbnail = ? WHERE id = ?', 
+            [thumbnailImage.url, id]
+        );
+
+        if (update.affectedRows === 0) {
+            return sendResponse(res, 404, false, 'Course not found or no update made');
+        }
+
+        return sendResponse(res, 200, true, 'Thumbnail updated successfully', { imgUrl: thumbnailImage.url });
+
+    } catch (error) {
+        console.error('Error occurred while updating course thumbnail:', error);
+        return sendResponse(res, 500, false, 'Failed to update course thumbnail', { err: error.message });
+    }
+};
+
 function calculateTotalTime(timeArray) {
     let totalSeconds = 0;
 
