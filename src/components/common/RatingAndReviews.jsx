@@ -7,13 +7,15 @@ import Image from "next/image";
 const RatingAndReviews = async () => {
     let AllReviews = null;
     
-    const response = await apiHandler("/rating/all");
+    const response = await apiHandler("/rating/all", "GET", false, null, { cache: 'no-store' });
     if(response.success){
         AllReviews = response.data.reviews
     }
 
     if(!AllReviews){
-        return null;
+        return (
+            <div></div>
+        )
     }
 
     return (
