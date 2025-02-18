@@ -39,7 +39,9 @@ const RatingAndReviews = async () => {
                                 <span className='text-sm text-richblack-500'>{timeAgo(item.date)}</span>
                             </div>
                         </div>
-                        <p className='text-base text-richblack-300 text-clip'>{item.review.length > 130 ? `${item.review.splice(0, 123)}...` : item.review}</p>
+                        <p className="text-base text-richblack-300 text-clip">
+                            {item.review.length > 130 ? `${item.review.slice(0, 123)}...` : item.review}
+                        </p>
                         <div className='w-full flex items-center gap-2'>
                             <span className='text-lg font-semibold text-yellow-300'>{item.rating}</span>
                             <div className="flex items-center gap-0">
