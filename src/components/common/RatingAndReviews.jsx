@@ -22,7 +22,7 @@ const RatingAndReviews = async () => {
         <div className='w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
             {
                 AllReviews.map((item, index) => (
-                    <div key={index} className='w-full h-[200px] bg-richblack-800 rounded-md p-4 gap-4 overflow-clip'>
+                    <div key={index} className='w-full min-h-[200px] bg-richblack-800 rounded-md p-4 gap-4 overflow-clip'>
                         <div className='w-full flex justify-start items-center gap-2'>
                             {
                                 item.userImg ? 
