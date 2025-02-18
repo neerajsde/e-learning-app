@@ -153,7 +153,7 @@ const Course = async ({ params }) => {
         {/* RightMenu */}
         <div className="w-full flex flex-col my-0 md:my-6 rounded-lg">
           <Image
-            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${data.course.thumbnail}`}
+            src={`${data.course.thumbnail}`}
             alt="Thumbnail"
             width={400}
             height={300}
