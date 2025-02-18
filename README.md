@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# E-Learning App
 
-## Getting Started
+## Overview
+E-Learning App is a full-stack web application designed to provide a seamless online learning experience. This platform enables users to access courses, track progress, and enhance their learning journey with an intuitive interface. Built from scratch using modern web technologies, this project ensures performance, scalability, and user engagement.
 
-First, run the development server:
+## Features
+- User authentication and authorization
+- Course listing and detailed course pages
+- Progress tracking for enrolled courses
+- Interactive UI with a responsive design
+- Backend API for managing users, courses, and progress
+- Secure data storage and retrieval
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Technologies Used
+### Frontend:
+- **Next.js** – For server-side rendering and improved performance
+- **TailwindCSS** – For rapid and responsive UI styling
+- **Vercel** – For seamless frontend deployment
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Backend:
+- **Node.js** – Server-side JavaScript runtime
+- **Express.js** – Backend framework for API handling
+- **MySQL** – Relational database for structured data storage
+- **VPS (Ubuntu/Linux)** – For hosting the backend securely
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Deployment
+### Frontend:
+The frontend is deployed on **Vercel**, ensuring fast and scalable deployment with automatic optimizations.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Backend:
+The backend is hosted on a **VPS**, allowing full control over the server environment, optimized performance, and security.
 
-## Learn More
+## Installation & Setup
+### Prerequisites:
+- Node.js & npm installed
+- MySQL database set up
+- VPS configured for backend deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Steps:
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/e-learning-app.git
+   cd e-learning-app
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Configure environment variables:
+   - Create a `.env` file in the root directory
+   - Add required variables (e.g., database credentials, API keys)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Run the backend:
+   ```sh
+   cd server
+   npm install
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. Start the frontend:
+   ```sh
+   npm run dev
+   ```
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Live Demo
+[Visit the E-Learning App](https://e-learning-app-pink.vercel.app/)
