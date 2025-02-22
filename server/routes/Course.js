@@ -18,6 +18,7 @@ const {
   createSection,
   updateSection,
   deleteSection,
+  getCourseSections,
 } = require("../controllers/Section");
 
 const {
@@ -43,7 +44,7 @@ const {
 router.get("/c/:courseUrl", getCourseDetails);
 router.post("/create", auth, isInstructor, createCourse);
 router.get("/all", getAllCourses);
-router.put('/update/thumbnail', updateCourseThumbnail);
+router.put('/update/thumbnail', auth, isInstructor, updateCourseThumbnail);
 
 // Category routes
 router.post("/category", auth, isAdmin, createCategory);
@@ -51,6 +52,7 @@ router.get("/categories", getAllCategory);
 router.get("/category/:category", categoryPageDetails);
 
 // Section routes
+router.get("/section", auth, isInstructor, getCourseSections);
 router.post("/section", auth, isInstructor, createSection);
 router.put("/section", auth, isInstructor, updateSection);
 router.delete("/section/:sectionId", auth, isInstructor, deleteSection);

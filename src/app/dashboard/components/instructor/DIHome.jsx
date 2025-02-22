@@ -8,6 +8,7 @@ import { FiLogOut } from "react-icons/fi";
 import SubMenu from "../common/SubMenu";
 import { useSearchParams } from "next/navigation";
 import UserProfie from "../common/UserProfie";
+import Course from "./Course";
 
 const menuItems = [
   [
@@ -66,6 +67,7 @@ const DIHome = () => {
         <div className="w-full h-full overflow-y-scroll p-4 flex flex-col bg-richblack-900 gap-2">
           <div className="w-full flex flex-col">
             {searchParams.get("tab") === menuItems[0][1].link && <UserProfie />}
+            {searchParams.get("tab") === menuItems[1][0].link && <Course />}
           </div>
         </div>
       </div>

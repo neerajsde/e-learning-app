@@ -1,22 +1,16 @@
 const { getPool } = require('../config/database');
 const sendResponse = require('../utlis/responseSender');
 const imageUploader = require('../utlis/imageUploader');
+const deleteImage = require('../utlis/deleteImageHandler');
 
 exports.createCourse = async (req, res) => {
   try {
       // Fetch data
       const { courseName, courseDescription, whatYoutWillLearn, price, category, tags } = req.body;
-      const thumbnail = req.files?.img;
 
       // Validation
-      if (!courseName || !courseDescription || !whatYoutWillLearn || !price || !category || !tags || !thumbnail) {
+      if (!courseName || !courseDescription || !whatYoutWillLearn || !price || !category || !tags) {
         return sendResponse(res, 400, false,'All fields are required');
-      }
-
-      // Upload image
-      const thumbnailImage = await imageUploader('CourseThumbnails', thumbnail);
-      if (!thumbnailImage.flag) {
-        return sendResponse(res, 400, false,thumbnailImage.message );
       }
 
       const pool = await getPool(); // Create a connection pool
@@ -32,9 +26,9 @@ exports.createCourse = async (req, res) => {
       const safeSlug = safeName.toLowerCase().replace(/\//g, "and").replaceAll("-"," and ").replace(/\s+/g, "-");
       const insertCourseQuery = `
           INSERT INTO Courses 
-          (courseName, courseDescription, instructorId, whatYouWillLearn, price, thumbnail, category, slugUrl) 
-          VALUES (?,?,?,?,?,?,?, ?)`;
-      const insertCourseParams = [courseName, courseDescription, req.user.id, whatYoutWillLearn, price, thumbnailImage.url, category, safeSlug];
+          (courseName, courseDescription, instructorId, whatYouWillLearn, price, category, slugUrl) 
+          VALUES (?,?,?,?,?,?, ?)`;
+      const insertCourseParams = [courseName, courseDescription, req.user.id, whatYoutWillLearn, price, category, safeSlug];
       const insertResult = await executeQuery(insertCourseQuery, insertCourseParams);
 
       if (insertResult.affectedRows === 0) {
@@ -48,7 +42,7 @@ exports.createCourse = async (req, res) => {
       await executeQuery(enrollQuery, [req.user.id, courseId]);
 
       // Process tags
-      const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      const tagList = tags.split(' ').map(tag => tag.trim()).filter(tag => tag.length > 0);
 
       for (const tag of tagList) {
           // Check if tag already exists
@@ -80,7 +74,7 @@ exports.createCourse = async (req, res) => {
       }
 
       // Return success response
-      return sendResponse(res, 200, true, 'Course Created Successfully');
+      return sendResponse(res, 200, true, 'Course Created Successfully', {courseId});
   } catch (error) {
       console.error('Error occurred while creating a new course:', error.message);
       return sendResponse(res, 500, false, 'Failed to create course', {err: error.message} );
@@ -89,6 +83,7 @@ exports.createCourse = async (req, res) => {
 
 exports.updateCourseThumbnail = async (req, res) => {
     try {
+        const userId = req.user.id;
         const { id } = req.query;
         const thumbnail = req.files?.img;
 
@@ -96,22 +91,35 @@ exports.updateCourseThumbnail = async (req, res) => {
             return sendResponse(res, 400, false, 'Course ID is required');
         }
 
-        if (!thumbnail) {
+        if (!req.files || !thumbnail) {
             return sendResponse(res, 400, false, 'Please select an image');
         }
 
         const pool = await getPool();
-        const [[course]] = await pool.query(
-            'SELECT thumbnail FROM Courses WHERE id = ?', [id]
+        const [course] = await pool.query(
+            'SELECT id, instructorId, thumbnail FROM Courses WHERE id = ?', 
+            [id]
         );
 
-        if(course.thumbnail){
-            await deleteImage(course.thumbnail);
+        if (!Array.isArray(course) || course.length === 0) {
+            return sendResponse(res, 404, false, 'Course not found');
+        }
+
+        // verify instructor
+        if(course[0].instructorId !== userId){
+            return sendResponse(res, 403, false, "You can't change another course details");
+        }
+
+        if (course[0].thumbnail) {
+            const deleteResult = await deleteImage(course[0].thumbnail);
+            if (!deleteResult) {
+                console.warn('Failed to delete old image:', course[0].thumbnail);
+            }
         }
 
         // Upload image
         const thumbnailImage = await imageUploader('CourseThumbnails', thumbnail);
-        if (!thumbnailImage.flag || !thumbnailImage.url) {
+        if (!thumbnailImage?.flag || !thumbnailImage?.url) {
             return sendResponse(res, 400, false, thumbnailImage.message || 'Image upload failed');
         }
 

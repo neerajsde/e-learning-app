@@ -56,13 +56,13 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // API routes
 app.use('/api/v1/user',decryptData,  userRoutes);
 app.use('/api/v1/profile',decryptData, profileRoutes);
-app.use('/api/v1/course',decryptData, courseRoutes);
+app.use('/api/v1/course', decryptData, courseRoutes);
 app.use('/api/v1/rating',decryptData, ratingRoutes);
 app.use('/api/v1/contact',decryptData, contactRoutes);
 // app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/dashboard',decryptData, dashboardRoutes);
 // app.use('/api/v1/dashboard/student',decryptData, studentRoutes);
-// app.use('/api/v1/dashboard/instructor',decryptData, instructorRoutes);
+app.use('/api/v1/dashboard/instructor',decryptData, instructorRoutes);
 // app.use('/api/v1/dashboard/admin',decryptData, adminRoutes);
 
 // Error handling

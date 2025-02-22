@@ -39,6 +39,7 @@ CREATE TABLE Courses (
     thumbnail VARCHAR(255),
     category VARCHAR(100),
     slugUrl VARCHAR(255) UNIQUE NOT NULL,
+    isPublish BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (instructorId) REFERENCES Users(id)
