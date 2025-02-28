@@ -12,7 +12,7 @@ const Card = ({ data }) => {
   return (
     <Link href={`/courses/${data.slugUrl}`} prefetch={true} className="w-full flex flex-col gap-2">
       <Image
-        src={`${data.thumbnail}`}
+        src={`${data.thumbnail || `${process.env.NEXT_PUBLIC_BACKEND_URL}/public/Logo/courseBanner.jpg`}`}
         width={100}
         height={200}
         className="w-full h-[200px] object-cover rounded-md"

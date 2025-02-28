@@ -1,5 +1,6 @@
 const { getPool } = require('../config/database');
 const sendResponse = require('../utlis/responseSender');
+const deleteVideoHandler = require('../utlis/deleteVideoHandler');
 
 exports.createSection = async (req, res) => {
     try{
@@ -57,26 +58,51 @@ exports.updateSection = async (req, res) => {
 exports.deleteSection = async (req, res) => {
     try {
         const { sectionId } = req.params;
-
-        // Validate sectionId
         if (!sectionId) {
             return sendResponse(res, 400, false, 'Section ID is required');
         }
 
-        const pool = getPool(); // Ensure asynchronous call to getPool
+        const pool = getPool();
 
-        // Delete section from the database
-        const [deleteResult] = await pool.query('DELETE FROM Section WHERE id = ?', [sectionId]);
-
-        if (deleteResult.affectedRows === 0) {
+        // Check if the section exists before proceeding
+        const [section] = await pool.query('SELECT id FROM Section WHERE id = ?', [sectionId]);
+        if (section.length === 0) {
             return sendResponse(res, 404, false, 'Section not found');
         }
 
-        // Return success response
+        // Retrieve all subsections related to this section
+        const [subsections] = await pool.query('SELECT id, videoURL FROM SubSection WHERE sectionId = ?', [sectionId]);
+
+        // Delete all videos concurrently
+        await Promise.all(subsections.map(async (sub) => {
+            if (sub.videoURL) {
+                const isDelete = await deleteVideoHandler(sub.videoURL);
+                if (!isDelete.flag) {
+                    throw new Error(isDelete.message); // Throwing error will be caught in the catch block
+                }
+            }
+        }));
+
+        // Using transactions to ensure data integrity
+        await pool.query('START TRANSACTION');
+
+        // Delete subsections
+        await pool.query('DELETE FROM SubSection WHERE sectionId = ?', [sectionId]);
+
+        // Delete section
+        const [deleteResult] = await pool.query('DELETE FROM Section WHERE id = ?', [sectionId]);
+
+        if (deleteResult.affectedRows === 0) {
+            await pool.query('ROLLBACK');
+            return sendResponse(res, 500, false, 'Failed to delete section');
+        }
+
+        await pool.query('COMMIT'); // Commit transaction if all operations succeed
+
         return sendResponse(res, 200, true, 'Section deleted successfully');
     } catch (error) {
         console.error('Error while deleting section:', error.message);
-        return sendResponse(res, 500, false, 'Unable to delete section. Please try again.', {error: error.message});
+        return sendResponse(res, 500, false, 'Unable to delete section. Please try again.', { error: error.message });
     }
 };
 
@@ -110,6 +136,7 @@ exports.getCourseSections = async (req, res) => {
         sectionsAndSubsections.forEach(row => {
             if (!sectionMap[row.sectionId]) {
                 sectionMap[row.sectionId] = {
+                    id: row.sectionId,
                     sectionName: row.sectionName,
                     subSections: []
                 };

@@ -12,12 +12,24 @@ const apiImgSender = async (pathname, method = "POST", includeToken = false, bod
             headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const options = {
+        // 🛠️ Only set Content-Type if body is NOT FormData
+        if (!(body instanceof FormData)) {
+            headers["Content-Type"] = "application/json";
+        }
+
+        // Debugging FormData before sending
+        // if (body instanceof FormData) {
+        //     console.log("✅ FormData is being sent:");
+        //     for (let pair of body.entries()) {
+        //         console.log(`${pair[0]}:`, pair[1]);
+        //     }
+        // }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1${pathname}`, {
             method,
             headers,
-            body,  // No need to stringify FormData, it should be passed as is.
-        };
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1${pathname}`, options);
+            body,
+        });
 
         const encryptedResponse = await response.json();
         return decryptData(encryptedResponse);

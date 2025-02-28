@@ -3,7 +3,11 @@ const router = express.Router();
 
 const {
   createCourse,
+  publishCourse,
+  unPublishCourse,
+  getCourseById,
   getCourseDetails,
+  updateCourse,
   getAllCourses,
   updateCourseThumbnail
 } = require("../controllers/Course");
@@ -33,6 +37,7 @@ const {
   getRatingsAndReviewsByCourseId,
 } = require("../controllers/RatingAndReviews");
 
+// Middleware
 const {
   auth,
   isStudent,
@@ -40,22 +45,29 @@ const {
   isAdmin,
 } = require("../middleware/Auth");
 
+// const upload = require("../middleware/FileUpload");
+const { decryptData } = require('../middleware/Decrypt');
+
 // Course routes
-router.get("/c/:courseUrl", getCourseDetails);
-router.post("/create", auth, isInstructor, createCourse);
-router.get("/all", getAllCourses);
+router.get("/c/:courseUrl",decryptData, getCourseDetails);
+router.get("/cd/:courseId", auth, isInstructor, getCourseById);
+router.post("/create", decryptData, auth, isInstructor, createCourse);
+router.put("/update", decryptData, auth, isInstructor, updateCourse);
+router.put("/publish/:courseId", auth, isInstructor, publishCourse);
+router.put("/unpublish/:courseId", auth, isInstructor, unPublishCourse);
+router.get("/all", decryptData, getAllCourses);
 router.put('/update/thumbnail', auth, isInstructor, updateCourseThumbnail);
 
 // Category routes
-router.post("/category", auth, isAdmin, createCategory);
-router.get("/categories", getAllCategory);
-router.get("/category/:category", categoryPageDetails);
+router.post("/category", decryptData, auth, isAdmin, createCategory);
+router.get("/categories",decryptData, getAllCategory);
+router.get("/category/:category",decryptData, categoryPageDetails);
 
 // Section routes
-router.get("/section", auth, isInstructor, getCourseSections);
-router.post("/section", auth, isInstructor, createSection);
-router.put("/section", auth, isInstructor, updateSection);
-router.delete("/section/:sectionId", auth, isInstructor, deleteSection);
+router.get("/section", decryptData, auth, isInstructor, getCourseSections);
+router.post("/section",decryptData, auth, isInstructor, createSection);
+router.put("/section", decryptData, auth, isInstructor, updateSection);
+router.delete("/section/:sectionId", decryptData, auth, isInstructor, deleteSection);
 
 // Subsection routes
 router.post("/subsection", auth, isInstructor, createSubSection);
@@ -68,8 +80,8 @@ router.delete(
 );
 
 // rating and review
-router.post("/rating-and-review", auth, isStudent, createRating);
-router.get("/avg-rating/:courseId", getAvgCourseRating);
-router.get("/rating-and-review/:courseId", getRatingsAndReviewsByCourseId);
+router.post("/rating-and-review", decryptData, auth, isStudent, createRating);
+router.get("/avg-rating/:courseId", decryptData, getAvgCourseRating);
+router.get("/rating-and-review/:courseId", decryptData, getRatingsAndReviewsByCourseId);
 
 module.exports = router;

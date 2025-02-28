@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
@@ -24,16 +25,19 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(fileUpload());
 app.use(cookieParser());
 app.use(cors({
-  origin:process.env.FRONTEND_URL,
-  credentials: true
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// app.use(cors());
 
 // Database connection
 connectToDatabase().catch((err) => {
@@ -56,7 +60,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // API routes
 app.use('/api/v1/user',decryptData,  userRoutes);
 app.use('/api/v1/profile',decryptData, profileRoutes);
-app.use('/api/v1/course', decryptData, courseRoutes);
+app.use('/api/v1/course', courseRoutes);
 app.use('/api/v1/rating',decryptData, ratingRoutes);
 app.use('/api/v1/contact',decryptData, contactRoutes);
 // app.use('/api/v1/payment', paymentRoutes);

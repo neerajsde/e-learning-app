@@ -8,7 +8,6 @@ import { MdError } from "react-icons/md";
 import Link from 'next/link';
 import { useRouter, useSearchParams } from "next/navigation";
 import AddCourse from './AddCourse';
-import EditCourse from './EditCourse';
 import { MdEdit } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
 
@@ -39,12 +38,8 @@ const Course = () => {
         router.push(`?${params.toString()}`, { scroll: false });
     };
 
-    if(searchParams.get("course") === "add"){
-        return (<AddCourse/>)
-    }
-
-    if(searchParams.get("course") === "edit"){
-        return (<EditCourse/>)
+    if(searchParams.get("course") === "add" || searchParams.get("course") === "edit"){
+        return (<AddCourse getAllCourses={getAllCourses}/>)
     }
 
   return (

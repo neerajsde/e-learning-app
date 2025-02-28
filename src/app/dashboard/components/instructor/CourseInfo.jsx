@@ -15,13 +15,15 @@ import TextEditor from "../common/TextEditor";
 import apiHandler from "@/utils/apiHandler";
 import apiImgSender from "@/utils/apiImageHandler";
 import { toast } from "@/hooks/use-toast";
+import { useSearchParams } from "next/navigation";
 
 
-const CourseInfo = ({setSteps, setCurrStep, setCourseId}) => {
-  const [file, setFile] = useState(null);
-  const fileInputRef = useRef(null);
+const CourseInfo = ({steps, setSteps, setCurrStep, setCourseId}) => {
+  const searchParams = useSearchParams();
   const [content, setContent] = useState("");
   const [courseCategory, setCourseCategory] = useState(null);
+  const [file, setFile] = useState(null);
+  const fileInputRef = useRef(null);
   const { getRootProps, getInputProps } = useDropzone({
     accept: "image/*, video/*",
     maxSize: 6 * 1024 * 1024, // 6MB for images
@@ -42,6 +44,36 @@ const CourseInfo = ({setSteps, setCurrStep, setCourseId}) => {
     tags: "",
   });
 
+  async function getCourseDetailsWithId(courseId){
+    const response = await apiHandler(`/course/cd/${courseId}`, "GET", true);
+    if(response.success){
+      const courseData = response.data.course;
+      setFormData({
+        title: courseData.courseName,
+        description: courseData.courseDescription,
+        price: courseData.price,
+        category: courseData.category,
+        tags: response.data.tags
+      });
+      setContent(courseData.whatYouWillLearn);
+      if(!steps[0].click){
+        setSteps((prevState) => 
+          prevState.map((step, index) => 
+              index === 0 ? { ...step, isFilled: true, click: true } : step
+          )
+        ); 
+        setCurrStep(2); 
+      }
+    }
+  }
+
+  useEffect(() => {
+    if(searchParams.get("course") === "edit"){
+      const id = searchParams.get("cid");
+      getCourseDetailsWithId(id);
+    }
+  },[searchParams])
+
   const getCategoryData = async () => {
     const response = await apiHandler('/course/categories', "GET");
     if(response.success){
@@ -60,27 +92,8 @@ const CourseInfo = ({setSteps, setCurrStep, setCourseId}) => {
     }));
   }
 
-  const submitHandler = async(e) => {
-    e.preventDefault();
-    if(!content){
-      toast({
-        title: "Fill required fields",
-        description: "Failed to authenticate. Please try again.",
-      });
-      return;
-    }
-    try{
-      setIsLoading(true);
-      const payload = {
-        courseName: formData.title,
-        courseDescription: formData.description,
-        whatYoutWillLearn: content,
-        price: formData.price,
-        category: formData.category,
-        tags: formData.tags
-      }
-
-      const response = await apiHandler("/course/create", "POST", true, payload);
+  async function createCourse(payload) {
+    const response = await apiHandler("/course/create", "POST", true, payload);
       if(response.success){
         const formXdata = new FormData();
         formXdata.append("img", file);
@@ -105,6 +118,58 @@ const CourseInfo = ({setSteps, setCurrStep, setCourseId}) => {
         title: response.success ? "Success" :  "Uh oh! Something went wrong.",
         description: response.message || "Failed to authenticate. Please try again.",
       });
+  }
+
+  async function updateCourse(payload) {
+    const courseId = searchParams.get("cid");
+    const response = await apiHandler(`/course/update?id=${courseId}`, "PUT", true, payload);
+      if(response.success){
+        if(file){
+          const formXdata = new FormData();
+          formXdata.append("img", file);
+          const addThumbnail = await apiImgSender(`/course/update/thumbnail?id=${payload.courseId}`, "PUT", true, formXdata);
+          if(!addThumbnail.success){
+            toast({
+              title: "Uh oh! Something went wrong.",
+              description: addThumbnail.message || "Failed to upload thubnail. Please try again.",
+            });
+          }
+        }
+        setCurrStep(2); 
+      }
+      toast({
+        title: response.success ? "Success" :  "Uh oh! Something went wrong.",
+        description: response.message || "Failed to authenticate. Please try again.",
+      });
+  }
+
+  const submitHandler = async(e) => {
+    e.preventDefault();
+    if(!content){
+      toast({
+        title: "⚠️ Warning",
+        description: "Please fill Benifits of course.",
+      });
+      return;
+    }
+    try{
+      setIsLoading(true);
+      const payload = {
+        courseName: formData.title,
+        courseDescription: formData.description,
+        whatYoutWillLearn: content,
+        price: formData.price,
+        category: formData.category,
+        tags: formData.tags
+      }
+
+      if(searchParams.get("course") === "edit"){
+        await updateCourse(payload);
+      }
+      else{
+        await createCourse(payload);
+      }
+      
     } catch(err){
       toast({
         title: "Uh oh! Something went wrong.",
@@ -217,7 +282,7 @@ const CourseInfo = ({setSteps, setCurrStep, setCourseId}) => {
 
       <div className="w-full flex flex-col gap-1">
         <label className="block text-sm font-medium text-richblack-200">
-          Course Thumbnail<span className="text-red-600">*</span>
+          {searchParams.get("course") === "edit" ? "Replace Course Thumbnail" : "Course Thumbnail"}<span className="text-red-600">*</span>
         </label>
         <div
           {...getRootProps()}
@@ -254,9 +319,9 @@ const CourseInfo = ({setSteps, setCurrStep, setCourseId}) => {
       <div className="w-full flex items-center justify-end gap-4 ">
         <button 
           type="submit"
-          className="w-24 h-10 flex items-center justify-center gap-1 bg-yellow-200 border border-yellow-200 text-richblack-900 rounded-md text-base font-semibold hover:bg-yellow-300 transition-all duration-200 ease-in"
+          className="w-40 h-10 flex items-center justify-center gap-1 bg-yellow-200 border border-yellow-200 text-richblack-900 rounded-md text-base font-semibold hover:bg-yellow-300 transition-all duration-200 ease-in"
         >
-          {isLoading ? <MdLoader /> : "Next"}
+          {isLoading ? <MdLoader /> : "Save & Next"}
         </button>
       </div>
     </form>

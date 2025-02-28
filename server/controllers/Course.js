@@ -81,6 +81,232 @@ exports.createCourse = async (req, res) => {
   }
 };
 
+exports.publishCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const instructorId = req.user.id;
+
+        if (!courseId || courseId == 0  || !instructorId) {
+            return sendResponse(res, 400, false, 'Invalid request. Course ID and Instructor ID are required.');
+        }
+
+        const pool = getPool();
+        const [[course]] = await pool.query(
+            'SELECT * FROM Courses WHERE id = ?', 
+            [courseId]
+        );
+
+        if (!course) {
+            return sendResponse(res, 404, false, 'Course not found.');
+        }
+
+        if (course.instructorId !== instructorId) {
+            return sendResponse(res, 403, false, "You don't have permission to publish this course.");
+        }
+
+        // vaildate course details data
+        if(!course.courseName || !course.courseDescription || !course.thumbnail || !course.category || !course.whatYouWillLearn || !course.price){
+            return sendResponse(res, 401, false, 'Please Fill course details');
+        }
+        // vaildate sections data
+        const [courseSections] = await pool.query(
+            'SELECT * FROM Section WHERE courseId = ?', 
+            [courseId]
+        );
+        if (courseSections.length < 5) {
+            return sendResponse(res, 404, false, 'Please create min 5 sections');
+        }
+
+        const [updateResult] = await pool.query(
+            'UPDATE Courses SET isPublish = TRUE WHERE id = ? AND instructorId = ?', 
+            [courseId, instructorId]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return sendResponse(res, 500, false, 'Failed to publish the course. Please try again.');
+        }
+
+        return sendResponse(res, 200, true, 'Congratulations! Your course is now live.');
+    } catch (error) {
+        console.error('Error publishing course:', error);
+        return sendResponse(res, 500, false, 'Internal Server Error.', { error: error.message });
+    }
+};
+
+exports.unPublishCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const instructorId = req.user.id;
+
+        if (!courseId || courseId == 0  || !instructorId) {
+            return sendResponse(res, 400, false, 'Invalid request. Course ID and Instructor ID are required.');
+        }
+
+        const pool = getPool();
+        const [[course]] = await pool.query(
+            'SELECT * FROM Courses WHERE id = ?', 
+            [courseId]
+        );
+
+        if (!course) {
+            return sendResponse(res, 404, false, 'Course not found.');
+        }
+
+        if (course.instructorId !== instructorId) {
+            return sendResponse(res, 403, false, "You don't have permission to publish this course.");
+        }
+
+        // vaildate course details data
+        if(!course.courseName || !course.courseDescription || !course.thumbnail || !course.category || !course.whatYouWillLearn || !course.price){
+            return sendResponse(res, 401, false, 'Please Fill course details');
+        }
+        // vaildate sections data
+        const [courseSections] = await pool.query(
+            'SELECT * FROM Section WHERE courseId = ?', 
+            [courseId]
+        );
+        if (courseSections.length < 5) {
+            return sendResponse(res, 404, false, 'Please create min 5 sections');
+        }
+
+        const [updateResult] = await pool.query(
+            'UPDATE Courses SET isPublish = FALSE WHERE id = ? AND instructorId = ?', 
+            [courseId, instructorId]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return sendResponse(res, 500, false, 'Failed to publish the course. Please try again.');
+        }
+
+        return sendResponse(res, 200, true, 'Congratulations! Your course is public.');
+    } catch (error) {
+        console.error('Error un-publishing course:', error);
+        return sendResponse(res, 500, false, 'Internal Server Error.', { error: error.message });
+    }
+};
+
+exports.getCourseById = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const instructorId = req.user.id;
+
+        if (!courseId) {
+            return sendResponse(res, 400, false, 'Invalid request. Course ID is required.');
+        }
+
+        const pool = getPool();
+        const [[course]] = await pool.query(
+            'SELECT * FROM Courses WHERE id = ?', 
+            [courseId]
+        );
+        if (!course) {
+            return sendResponse(res, 404, false, 'Course not found.');
+        }
+        if(course.instructorId !== instructorId){
+            return sendResponse(res, 403, false, "You can't access another course details");
+        }
+
+        const [tagsArr] = await pool.query(
+            `SELECT t.name FROM Tags t
+             JOIN TaggedCourse tc ON t.id = tc.tagId
+             WHERE tc.courseId = ?`, 
+            [courseId]
+        );
+        const tags = tagsArr.map(tag => tag.name).join(' ');
+
+        return sendResponse(res, 200, true, 'Found course data', { course, tags});
+    } catch (error) {
+        console.error('Error while getting course:', error);
+        return sendResponse(res, 500, false, 'Internal Server Error.', { error: error.message });
+    }
+};
+
+exports.updateCourse = async (req, res) => {
+    try {
+        // Extract request data
+        const userId = req.user.id;
+        const courseId = req.query.id;
+        const { courseName, courseDescription, whatYoutWillLearn, price, category, tags } = req.body;
+
+        if (!courseId) {
+            return sendResponse(res, 400, false, 'Course ID is required');
+        }
+        // Validate required fields
+        if (!courseName || !courseDescription || !whatYoutWillLearn || !price || !category || !tags) {
+            return sendResponse(res, 400, false, 'All fields are required');
+        }
+
+        const pool = getPool(); // Get DB connection pool
+
+        const executeQuery = async (query, params = []) => {
+            const [results] = await pool.query(query, params);
+            return results;
+        };
+
+        const [course] = await pool.query(
+            'SELECT id, instructorId, thumbnail FROM Courses WHERE id = ?', 
+            [courseId]
+        );
+
+        if (!Array.isArray(course) || course.length === 0) {
+            return sendResponse(res, 404, false, 'Course not found');
+        }
+
+        // verify instructor
+        if(course[0].instructorId !== userId){
+            return sendResponse(res, 403, false, "You can't change another course details");
+        }
+        // Update course details
+        const updateQuery = `UPDATE Courses SET courseName = ?, courseDescription = ?, whatYouWillLearn = ?, price = ?, category = ? WHERE id = ?`;
+        await executeQuery(updateQuery, [courseName, courseDescription, whatYoutWillLearn, price, category, courseId]);
+
+        // Process tags
+        const tagList = tags.split(' ').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+        if (tagList.length > 0) {
+            // Get instructor name
+            const instructorQuery = `SELECT name FROM Users WHERE id = ?`;
+            const [instructor] = await executeQuery(instructorQuery, [req.user.id]);
+            const instructorName = instructor?.name || 'Unknown Instructor';
+
+            // Process tags concurrently
+            await Promise.all(tagList.map(async (tag) => {
+                // Check if tag exists
+                const existingTagQuery = `SELECT id FROM Tags WHERE name = ?`;
+                const existingTag = await executeQuery(existingTagQuery, [tag]);
+
+                let tagId;
+                if (existingTag.length > 0) {
+                    tagId = existingTag[0].id;
+                } else {
+                    // Create new tag
+                    const createTagQuery = `INSERT INTO Tags (name, description) VALUES (?, ?)`;
+                    const tagDescription = `This tag ${tag} was created by ${instructorName}`;
+                    const newTagResult = await executeQuery(createTagQuery, [tag, tagDescription]);
+                    tagId = newTagResult.insertId;
+                }
+
+                // Check if tag-course relationship exists
+                const checkTagCourseQuery = `SELECT 1 FROM TaggedCourse WHERE tagId = ? AND courseId = ?`;
+                const tagCourseExists = await executeQuery(checkTagCourseQuery, [tagId, courseId]);
+
+                if (tagCourseExists.length === 0) {
+                    // Link tag to course
+                    const tagCourseLinkQuery = `INSERT INTO TaggedCourse (tagId, courseId) VALUES (?, ?)`;
+                    await executeQuery(tagCourseLinkQuery, [tagId, courseId]);
+                }
+            }));
+        }
+
+        // Return success response
+        return sendResponse(res, 200, true, 'Course Updated Successfully', { courseId });
+
+    } catch (error) {
+        console.error('Error occurred while updating course:', error.message);
+        return sendResponse(res, 500, false, 'Failed to update course', { error: error.message });
+    }
+};
+
 exports.updateCourseThumbnail = async (req, res) => {
     try {
         const userId = req.user.id;

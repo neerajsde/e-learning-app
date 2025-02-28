@@ -31,6 +31,7 @@ const apiHandler = async (pathname, method = 'GET', includeToken = false, body =
         } else{
             response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1${pathname}`, options);
         }
+
         
         const encryptedResponse = await response.json();
         return decryptData(encryptedResponse);

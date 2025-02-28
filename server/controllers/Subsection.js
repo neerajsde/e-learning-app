@@ -1,20 +1,16 @@
 const { getPool } = require('../config/database');
 const videoUploader = require('../utlis/videoUploader');
 const deleteVideoHandler = require('../utlis/deleteVideoHandler');
+const sendResponse = require('../utlis/responseSender');
 
 exports.createSubSection = async (req, res) => {
     try{
-        //fecth data from Req body
-        const {sectionId, title, timeDuration, description} = req.body;
+        const {sectionId, title, hour, minute, second, description} = req.body;
+        if(!sectionId || !title || !hour || !minute || !second || !description){
+            return sendResponse(res, 404, false, "All fields are required");
+        }
         //extract file/video
         const video  = req.files?.video;
-        //validation
-        if(!sectionId || !title || !timeDuration || !description) {
-            return res.status(400).json({
-                success:false,
-                message:'All fields are required',
-            });
-        }
 
         if (!video) {
             return res.status(400).json({ success: false, message: 'No video file provided' });
@@ -25,41 +21,32 @@ exports.createSubSection = async (req, res) => {
         if (!videoUploading.flag) {
             return res.status(400).json({ success: false, message: videoUploading.message });
         }
-
+        const duration = `${hour}:${minute}:${second}`;
         const Pool = getPool();
-        const [insertResult] = await Pool.query('INSERT INTO SubSection (sectionId, title, timeDuration, description, videoURL) VALUES (?,?,?,?,?)', [sectionId, title, timeDuration, description, videoUploading.url]);
+        const [insertResult] = await Pool.query('INSERT INTO SubSection (sectionId, title, timeDuration, description, videoURL) VALUES (?,?,?,?,?)', [sectionId, title, duration, description, videoUploading.url]);
 
         if (insertResult.affectedRows === 0) {
-            return res.status(500).json({ success: false, message: 'Error creating the course' });
+            return sendResponse(res, 500, false, 'Error creating the course');
         }
-        return res.status(200).json({
-            succcess:true,
-            message:'Sub Section Created Successfully',
-        });
+        return sendResponse(res, 200, true, 'Sub Section Created Successfully');
     }
     catch(error) {
         console.log("Error while creating new sub section: ", error);
-        return res.status(500).json({
-            success:false,
-            message:"Internal Server Error",
-            error:error.message,
-        })
+        return sendResponse(res, 500, false, "Internal Server Error", {error:error.message});
     }
 };
 
 exports.updateSubSection = async (req, res) => {
     try {
         // Extract data from request body
-        const { subSectionId, title, timeDuration, description, oldVideoUrl } = req.body;
+        const { subSectionId, title, hour, minute, second, description, oldVideoUrl } = req.body;
         // Extract file/video
         const video = req.files?.video;
+        const instructorId = req.user.id;
 
         // Validation
-        if (!subSectionId || !title || !timeDuration || !description) {
-            return res.status(400).json({
-                success: false,
-                message: 'All fields are required',
-            });
+        if (!subSectionId || !title || !hour || !minute || !second || !description) {
+            return sendResponse(res, 400, false, 'All fields are required');
         }
 
         let videoURL = null;
@@ -71,14 +58,15 @@ exports.updateSubSection = async (req, res) => {
             // Upload new video if provided
             const videoUploading = await videoUploader('CourseVideos', video);
             if (!videoUploading.flag) {
-                return res.status(400).json({ success: false, message: videoUploading.message });
+                return sendResponse(res, 400, false, videoUploading.message);
             }
             videoURL = videoUploading.url;
         }
 
+        const duration = `${hour}:${minute}:${second}`;
         const Pool = getPool();
         let query = 'UPDATE SubSection SET title = ?, timeDuration = ?, description = ?';
-        const params = [title, timeDuration, description];
+        const params = [title, duration, description];
 
         if (videoURL) {
             query += ', videoURL = ?';
@@ -91,20 +79,13 @@ exports.updateSubSection = async (req, res) => {
         const [updateResult] = await Pool.query(query, params);
 
         if (updateResult.affectedRows === 0) {
-            return res.status(404).json({ success: false, message: 'SubSection not found or no changes made' });
+            return sendResponse(res, 404, false, 'SubSection not found or no changes made');
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'SubSection updated successfully',
-        });
+        return sendResponse(res, 200, true, 'SubSection updated successfully');
     } catch (error) {
         console.log("Error while updating sub section: ", error.message);
-        return res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message,
-        });
+        return sendResponse(res, 500, false, "Internal server error", error.message);
     }
 };
 
@@ -115,35 +96,28 @@ exports.deleteSubSection = async (req, res) => {
 
         // Validation
         if (!subSectionId) {
-            return res.status(400).json({
-                success: false,
-                message: 'SubSection ID is required',
-            });
+            return sendResponse(res, 400, false, 'SubSection ID is required');
         }
 
         const Pool = getPool();
         const [subSectionData] = await Pool.query('SELECT * FROM SubSection WHERE id = ?', [subSectionId]);
         if(subSectionData.length > 0){
             if(subSectionData[0].videoURL){
-                await deleteVideoHandler(subSectionData[0].videoURL);
+                const isDelete = await deleteVideoHandler(subSectionData[0].videoURL);
+                if(!isDelete.flag){
+                    return sendResponse(res, 403, false, isDelete.message);
+                }
             }
         }
         const [deleteResult] = await Pool.query('DELETE FROM SubSection WHERE id = ?', [subSectionId]);
 
         if (deleteResult.affectedRows === 0) {
-            return res.status(404).json({ success: false, message: 'SubSection not found' });
+            return sendResponse(res, 404, false, 'SubSection not found');
         }
 
-        return res.status(200).json({
-            success: true,
-            message: 'SubSection deleted successfully',
-        });
+        return sendResponse(res, 200, true, 'SubSection deleted successfully');
     } catch (error) {
         console.log("Error while deleting sub section: ", error.message);
-        return res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message,
-        });
+        return sendResponse(res, 500, false, "Internal Server Error");
     }
 };
