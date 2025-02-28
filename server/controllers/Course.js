@@ -370,8 +370,17 @@ function calculateTotalTime(timeArray) {
     let totalSeconds = 0;
 
     timeArray.forEach(item => {
-        let [minutes, seconds] = item.time.split(":").map(Number);
-        totalSeconds += minutes * 60 + seconds;
+        let timeParts = item.time.split(":").map(Number);
+        
+        let hours = 0, minutes = 0, seconds = 0;
+
+        if (timeParts.length === 3) {
+            [hours, minutes, seconds] = timeParts;
+        } else if (timeParts.length === 2) {
+            [minutes, seconds] = timeParts;
+        }
+
+        totalSeconds += hours * 3600 + minutes * 60 + seconds;
     });
 
     let totalMinutes = Math.floor(totalSeconds / 60);
